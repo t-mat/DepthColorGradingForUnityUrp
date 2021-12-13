@@ -2,8 +2,33 @@
 // SPDX-FileCopyrightText: Copyright (c) Takayuki Matsuoka
 // SPDX-License-Identifier: MIT
 
-#include "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/NormalReconstruction.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
+
+
+struct DepthColorGrading_Attributes {
+    float4 positionOS : POSITION;
+    float2 uv         : TEXCOORD0;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+};
+
+
+struct DepthColorGrading_Varyings {
+    float4 positionCS : SV_POSITION;
+    float2 uv         : TEXCOORD0;
+    UNITY_VERTEX_OUTPUT_STEREO
+};
+
+
+//
+// Samplers
+//
+#ifndef UNIVERSAL_POSTPROCESSING_COMMON_INCLUDED
+SAMPLER(sampler_LinearClamp);   // Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl
+SAMPLER(sampler_PointClamp);    // Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl
+#endif
 
 
 //
@@ -161,7 +186,7 @@ half3 DepthColorGrading(half2 screenUv, half3 srcColor, float rawDepth) {
 
 
 //  Fragment shader entry point
-half4 Frag(Varyings input) : SV_Target {
+half4 DepthColorGrading_Frag(DepthColorGrading_Varyings input) : SV_Target {
     const half2  screenUv  = input.uv;
     const float  rawDepth  = GetRawDepth(screenUv);
     const half4  srcColor4 = sampleMainTex(screenUv);
@@ -169,4 +194,19 @@ half4 Frag(Varyings input) : SV_Target {
     const half3  grdColor3 = DepthColorGrading(screenUv, lowColor3, rawDepth);
     const half3  o         = grdColor3 * getHdrScale();
     return half4(o.r, o.g, o.b, srcColor4.a);
+}
+
+
+//  Vertex shader
+DepthColorGrading_Varyings DepthColorGrading_FullscreenVert(DepthColorGrading_Attributes input) {
+    DepthColorGrading_Varyings output;
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
+    const float3 posOS = input.positionOS.xyz;
+    const float4 posCS = mul(UNITY_MATRIX_VP, float4(posOS, 1.0));
+    output.positionCS = posCS;
+    output.uv = input.uv;
+
+    return output;
 }

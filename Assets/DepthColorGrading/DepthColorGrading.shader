@@ -16,8 +16,8 @@ Shader "PostEffect/DepthColorGrading"
         {
             HLSLPROGRAM
             #include "DepthColorGrading.hlsl"
-            #pragma vertex FullscreenVert // Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/Common.hlsl
-            #pragma fragment Frag
+            #pragma vertex   DepthColorGrading_FullscreenVert
+            #pragma fragment DepthColorGrading_Frag
             ENDHLSL
         }
     }
