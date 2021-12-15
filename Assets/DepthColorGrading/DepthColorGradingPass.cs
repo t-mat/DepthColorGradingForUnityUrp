@@ -32,10 +32,10 @@ namespace DepthColorGrading {
         private readonly DepthColorGradingLut2d _lut0 = new DepthColorGradingLut2d();
         private readonly DepthColorGradingLut2d _lut1 = new DepthColorGradingLut2d();
 
-//      public static DepthColorGradingPass Create() => new DepthColorGradingPass(RenderPassEvent.AfterRenderingOpaques);
-//      public static DepthColorGradingPass Create() => new DepthColorGradingPass(RenderPassEvent.BeforeRenderingPostProcessing);
         public static DepthColorGradingPass Create()
             => new DepthColorGradingPass(RenderPassEvent.AfterRenderingPostProcessing);
+        //  => new DepthColorGradingPass(RenderPassEvent.AfterRenderingOpaques);
+        //  => new DepthColorGradingPass(RenderPassEvent.BeforeRenderingPostProcessing);
 
         private DepthColorGradingPass(RenderPassEvent renderPassEvent)
         {
