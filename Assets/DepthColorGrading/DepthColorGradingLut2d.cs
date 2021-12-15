@@ -74,43 +74,43 @@ namespace DepthColorGrading {
             return tex;
         }
 
-        private static void UpdateLutTexture2D(Texture2D tex2d, float dh, float ds, float dl, float dgamma, Color tint,
-                                               Color     lift)
+        private static void UpdateLutTexture2D(Texture2D tex2d, float deltaH, float deltaS, float deltaL,
+                                               float deltaGamma, Color tint, Color lift)
         {
-            dh     = Mathf.Pow(dh,     3f);
-            dgamma = Mathf.Pow(dgamma, 3);
+            deltaH     = Mathf.Pow(deltaH,     3f);
+            deltaGamma = Mathf.Pow(deltaGamma, 3);
             lift.a = Mathf.Pow(lift.a, 2);
             tint.a = Mathf.Pow(tint.a, 2);
-            float gm = Mathf.Pow(10.0f, dgamma);
+            float gm = Mathf.Pow(10.0f, deltaGamma);
 
             int width  = tex2d.width;
             int height = tex2d.height;
             int size   = height;
 
             // d : Mapping coefficient from int[0,size-1] to float[0,1].
-            float d = 1.0f / (size - 1);
+            float k = 1.0f / (size - 1);
 
             var colors = new Color [width * height];
             for (int y = 0; y < height; y++)
             {
-                float sg = y * d;
+                float sg = y * k;
                 for (int x = 0; x < width; x++)
                 {
-                    float sr = (x % size) * d;
-                    float sb = (x / size) * d;
+                    float sr = (x % size) * k;
+                    float sb = ((int) (x / size)) * k;
                     float gr = Mathf.Pow(sr, gm);
                     float gg = Mathf.Pow(sg, gm);
                     float gb = Mathf.Pow(sb, gm);
                     Color.RGBToHSV(new Color(gr, gg, gb, 0), out float h, out float s, out float v);
-                    h += dh;
-                    s += ds;
+                    h += deltaH;
+                    s += deltaS;
                     s =  Mathf.Clamp(value: s, min: 0, max: 1);
-                    v *= Mathf.Clamp(value: dl, min: 0, max: 1) + 1.0f;
+                    v *= Mathf.Clamp(value: deltaL, min: 0, max: 1) + 1.0f;
                     Color   newColor = Color.HSVToRGB(h, s, v, hdr: false);
                     Vector3 newRgb   = new Vector3(newColor.r, newColor.g, newColor.b);
-                    if (dl < 0.0f)
+                    if (deltaL < 0.0f)
                     {
-                        newRgb *= dl + 1.0f;
+                        newRgb *= deltaL + 1.0f;
                     }
 
                     float or = Mathf.Lerp(newRgb.x, newRgb.x * tint.r, tint.a) + lift.r * lift.a;
