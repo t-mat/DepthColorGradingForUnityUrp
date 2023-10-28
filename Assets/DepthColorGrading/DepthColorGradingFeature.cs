@@ -4,7 +4,8 @@
 
 using UnityEngine.Rendering.Universal;
 
-namespace DepthColorGrading {
+namespace DepthColorGrading
+{
     public sealed class DepthColorGradingFeature : ScriptableRendererFeature
     {
         private DepthColorGradingPass _pass;

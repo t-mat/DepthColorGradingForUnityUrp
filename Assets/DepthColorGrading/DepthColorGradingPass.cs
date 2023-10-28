@@ -7,11 +7,14 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
-namespace DepthColorGrading {
-    public sealed class DepthColorGradingPass : ScriptableRenderPass {
+namespace DepthColorGrading
+{
+    public sealed class DepthColorGradingPass : ScriptableRenderPass
+    {
         private const string ShaderName = "PostEffect/DepthColorGrading";
 
-        private static class ShaderId {
+        private static class ShaderId
+        {
             private static         int P(string s) => Shader.PropertyToID(s);
             public static readonly int MainTex           = P("_MainTex");
             public static readonly int TempBuf           = P("_TempBuf");
@@ -25,17 +28,14 @@ namespace DepthColorGrading {
 
 #if ENABLE_PROFILER
         private const           string           ProfilingSamplerBlockName = "DepthColorGradingPass";
-        private static readonly ProfilingSampler ProfilingSampler = new ProfilingSampler(ProfilingSamplerBlockName);
+        private static readonly ProfilingSampler s_profilingSampler        = new(ProfilingSamplerBlockName);
 #endif
 
         private readonly Material               _material;
-        private readonly DepthColorGradingLut2d _lut0 = new DepthColorGradingLut2d();
-        private readonly DepthColorGradingLut2d _lut1 = new DepthColorGradingLut2d();
+        private readonly DepthColorGradingLut2d _lut0 = new();
+        private readonly DepthColorGradingLut2d _lut1 = new();
 
-        public static DepthColorGradingPass Create()
-            => new DepthColorGradingPass(RenderPassEvent.AfterRenderingPostProcessing);
-        //  => new DepthColorGradingPass(RenderPassEvent.AfterRenderingOpaques);
-        //  => new DepthColorGradingPass(RenderPassEvent.BeforeRenderingPostProcessing);
+        public static DepthColorGradingPass Create() => new(RenderPassEvent.AfterRenderingPostProcessing);
 
         private DepthColorGradingPass(RenderPassEvent renderPassEvent)
         {
@@ -69,24 +69,26 @@ namespace DepthColorGrading {
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             ref CameraData cameraData = ref renderingData.cameraData;
-            if (!cameraData.postProcessEnabled)
+            if (! cameraData.postProcessEnabled)
             {
                 return;
             }
 
             VolumeStack       volumeStack       = VolumeManager.instance.stack;
             DepthColorGrading depthColorGrading = volumeStack.GetComponent<DepthColorGrading>();
-            if (depthColorGrading == null || !depthColorGrading.IsActive())
+            if (depthColorGrading == null || ! depthColorGrading.IsActive())
             {
                 return;
             }
 
             Camera camera = cameraData.camera;
-            camera.TryGetComponent<UniversalAdditionalCameraData>(out var universalAdditionalCameraData);
-            if (universalAdditionalCameraData != null)
             {
-                // Require depth texture
-                universalAdditionalCameraData.requiresDepthOption = CameraOverrideOption.On;
+                camera.TryGetComponent<UniversalAdditionalCameraData>(out var universalAdditionalCameraData);
+                if (universalAdditionalCameraData != null)
+                {
+                    // Require depth texture
+                    universalAdditionalCameraData.requiresDepthOption = CameraOverrideOption.On;
+                }
             }
 
             {
@@ -152,7 +154,7 @@ namespace DepthColorGrading {
 
             CommandBuffer cmd = CommandBufferPool.Get();
 #if ENABLE_PROFILER
-            using (new ProfilingScope(cmd, ProfilingSampler))
+            using (new ProfilingScope(cmd, s_profilingSampler))
 #endif
             {
                 ScriptableRenderer      renderer = cameraData.renderer;
