@@ -7,8 +7,10 @@
 
 ## Prerequisites
 
-- Unity 2021.2 or greater.
-- URP (Universal Render Pipeline) 12.1 or greater.
+- Unity 2021.2 .. 2022.x
+- URP (Universal Render Pipeline) 12.1 .. 14.x
+
+NOTE : This example doesn't support Render Grapth yet.
 
 
 ## Installation
